@@ -4,32 +4,11 @@
 #include <set>
 #include <cmath>
 #include <cstdlib>
+#include "simplex.h"
+
 using namespace std;
 #define EPS 1E-9
 
-void initialize_of_valuables(vector<vector<double>> *A, vector<int>* base){
-	const int _m=3;
-	const int _n=6;
-	double _A[_m][_n]=	{{1,3,-1,0,2,0},
-						 {0,-2,4,1,0,0},
-						 {0,-4,3,0,8,1}};
-	double _B[_m]={7,12,10};
-	double _C[_n]={0,-1,3,0,-2,0};
-	int _base[_m]={1,4,6};
-	for(int i=1; i<=_m; i++){
-		for(int j=1; j<=_n; j++){
-			(*A)[i][j]=_A[i-1][j-1];
-		}
-	}
-	for(int i=1; i<=_m; i++){
-		(*A)[i][0]=_B[i-1];
-		(*base)[i]=_base[i-1];
-	}
-	for(int j=1; j<=_n; j++){
-		(*A)[0][j]=_C[j-1];
-	}
-	return;
-}
 
 void show_matrix(vector<vector<double>> *A,vector<int> *base){
 	int m=A->size()-1;
@@ -45,6 +24,18 @@ void show_matrix(vector<vector<double>> *A,vector<int> *base){
 	cout<<"base:"<<endl;
 	for(int i=1; i<=m; i++){
 		cout<<(*base)[i]<<endl;
+	}
+}
+void show_matrix(vector<vector<double>> *A){
+	int m=A->size()-1;
+	int n=(*A)[0].size()-1;
+	cout<<"A:"<<endl;
+	for(int i=0; i<=m; i++){
+		for(int j=0; j<=n; j++){
+			cout<<(*A)[i][j];
+			cout<<",";
+		}
+		cout<<endl;
 	}
 }
 int pivot(vector<vector<double>> *A, vector<int> *base){
@@ -91,22 +82,18 @@ void simplex(vector<vector<double>> *A, vector<int> *base){
 	int output;
 	while(1){
 		output=pivot(A, base);
-		if(output==1) {cout<<"End with right answer"<<endl; return;}
-		if(output==-1) {cout<<"Not Bounded!!"<<endl; return;}
+		if(output==1) return;
+		if(output==-1) return;
 	}
 }
-int main(){
-	const int _m=3;
-	const int _n=2;
-	double _A[_m][_n]=	{{1,1},
-						 {2,0},
-						 {2,1}};
-	double _B[_m]={4,5,6.5};
-	double _C[_n]={-3,-2};
 
+int simplex(vector<vector<double>> _A){
+
+	int _m=_A.size()-1;
+	int _n=_A[0].size()-1;
 	int n=_m+_n;
 	for(int i=1; i<=_m; i++){
-		if(_B[i-1]<0) n++;
+		if(_A[i][0]<0) n++;
 	}
 	vector<vector<double>> A(_m+1, vector<double>(n+1));
 	vector<int> base(_m+1);
@@ -117,17 +104,17 @@ int main(){
 	}
 	int itr_of_artificial_valuable=_n+_m;
 	for(int i=1; i<=_m; i++){
-		if(_B[i-1]>=0){
-			A[i][0]=_B[i-1];
+		if(_A[i][0]>=0){
+			A[i][0]=_A[i][0];
 			for(int j=1; j<=_n; j++){
-				A[i][j]=_A[i-1][j-1];
+				A[i][j]=_A[i][j];
 			}		
 			A[i][_n+i]=1;
 			base[i]=_n+i;
 		}else{
-			A[i][0]=-_B[i-1];
+			A[i][0]=-_A[i][0];
 			for(int j=1; j<=_n; j++){
-				A[i][j]=-_A[i-1][j-1];
+				A[i][j]=-_A[i][j];
 			}
 			A[i][_n+i]=-1;
 			itr_of_artificial_valuable++;
@@ -144,18 +131,12 @@ int main(){
 			A[0][0]+=A[i][0];
 		}
 	}
-	show_matrix(&A,&base);
+	//show_matrix(&A,&base);
 	simplex(&A,&base);
-	show_matrix(&A,&base);
+
+	//show_matrix(&A,&base);
 	if(A[0][0]>EPS){
-		cout<<"No Feasible answer is there!!"<<endl;
+		return -1;
 	}
-	for(int j=1; j<=_n; j++){
-		A[0][j]=-_C[j-1];
-	}
-	A[0][0]=0;
-	simplex(&A,&base);
-	show_matrix(&A,&base);
-	
-	return 0;
+	return 1;
 }
