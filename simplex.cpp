@@ -1,3 +1,16 @@
+/*
+Judge whether there is a point x in R^n such that
+
+a_11x_1+...+a_1nx_n <= b_1
+...
+a_m1x_1+...+a_mnx_n <= b_m
+
+Input should be in the form;
+0    0     ...  0
+b_1  a_11       a_1n
+...
+b_m  a_m1       a_mn
+*/
 
 #include <iostream>
 #include <vector>
