@@ -31,15 +31,20 @@ void initialize_of_valuables(vector<vector<double>> *A, vector<int>* base){
 	return;
 }
 
-void show_matrix(vector<vector<double>> *A){
+void show_matrix(vector<vector<double>> *A,vector<int> *base){
 	int m=A->size()-1;
 	int n=(*A)[0].size()-1;
+	cout<<"A:"<<endl;
 	for(int i=0; i<=m; i++){
 		for(int j=0; j<=n; j++){
 			cout<<(*A)[i][j];
 			cout<<",";
 		}
 		cout<<endl;
+	}
+	cout<<"base:"<<endl;
+	for(int i=1; i<=m; i++){
+		cout<<(*base)[i]<<endl;
 	}
 }
 int pivot(vector<vector<double>> *A, vector<int> *base){
@@ -91,13 +96,66 @@ void simplex(vector<vector<double>> *A, vector<int> *base){
 	}
 }
 int main(){
-	int m=3;	//No of Constrains
-	int n=6;	//No of Valuables
-	vector<vector<double>> A(m+1, vector<double>(n+1));
-	vector<int> base(m+1);
-	initialize_of_valuables(&A,&base);
-	show_matrix(&A);
+	const int _m=3;
+	const int _n=2;
+	double _A[_m][_n]=	{{1,1},
+						 {2,0},
+						 {2,1}};
+	double _B[_m]={4,5,6.5};
+	double _C[_n]={-3,-2};
+
+	int n=_m+_n;
+	for(int i=1; i<=_m; i++){
+		if(_B[i-1]<0) n++;
+	}
+	vector<vector<double>> A(_m+1, vector<double>(n+1));
+	vector<int> base(_m+1);
+	for(int i=0; i<=_m; i++){
+		for(int j=0; j<=n; j++){
+			A[i][j]=0;
+		}
+	}
+	int itr_of_artificial_valuable=_n+_m;
+	for(int i=1; i<=_m; i++){
+		if(_B[i-1]>=0){
+			A[i][0]=_B[i-1];
+			for(int j=1; j<=_n; j++){
+				A[i][j]=_A[i-1][j-1];
+			}		
+			A[i][_n+i]=1;
+			base[i]=_n+i;
+		}else{
+			A[i][0]=-_B[i-1];
+			for(int j=1; j<=_n; j++){
+				A[i][j]=-_A[i-1][j-1];
+			}
+			A[i][_n+i]=-1;
+			itr_of_artificial_valuable++;
+			A[i][itr_of_artificial_valuable]=1;
+			base[i]=itr_of_artificial_valuable;
+		}
+	}
+	for(int i=1; i<=_m; i++){
+		if(base[i]>_n+_m){
+			for(int j=1; j<=_n; j++){
+				A[0][j]+=A[i][j];
+			}
+			A[0][_n+i]=-1;
+			A[0][0]+=A[i][0];
+		}
+	}
+	show_matrix(&A,&base);
 	simplex(&A,&base);
-	show_matrix(&A);
+	show_matrix(&A,&base);
+	if(A[0][0]>EPS){
+		cout<<"No Feasible answer is there!!"<<endl;
+	}
+	for(int j=1; j<=_n; j++){
+		A[0][j]=-_C[j-1];
+	}
+	A[0][0]=0;
+	simplex(&A,&base);
+	show_matrix(&A,&base);
+	
 	return 0;
 }
