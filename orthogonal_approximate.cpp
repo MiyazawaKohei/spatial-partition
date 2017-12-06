@@ -51,6 +51,8 @@ void three_product_of_rotation(double alpha, double beta, double gamma,vector<ve
 void make_matrix(double alpha, double beta, double gamma ,double h,vector<vector<double>> *A){
 	double pi=3.14159265358979;
 	vector<vector<double>> R(3,vector<double>(3));
+
+	three_product_of_rotation(alpha,beta,gamma,&R);
 	for(int i=0; i<3; i++){
 		for(int j=0; j<3; j++){
 			(*A)[2*(i*3+j)][0]=R[i][j]+9*h*h/4;
@@ -80,16 +82,16 @@ void make_matrix(double alpha, double beta, double gamma ,double h,vector<vector
 	}
 	for(int i=0; i<3; i++){
 		for(int j=0; j<3; j++){
-			(*A)[2*(i*3+j)][(i*3+j)]=1;
-			(*A)[2*(i*3+j)+1][(i*3+j)]=-1;
+			(*A)[2*(i*3+j)][i*3+j+1]=1;
+			(*A)[2*(i*3+j)+1][i*3+j+1]=-1;
 		}
 	}
 	(*A)[18][10]=1; (*A)[18][0]=alpha+h/2;
 	(*A)[19][10]=-1; (*A)[19][0]=-alpha+h/2;
-	(*A)[20][10]=1; (*A)[20][0]=beta+h/2;
-	(*A)[21][10]=-1; (*A)[21][0]=-beta+h/2;
-	(*A)[22][10]=1; (*A)[22][0]=gamma+h/2;
-	(*A)[23][10]=-1; (*A)[23][0]=-gamma+h/2;
+	(*A)[20][11]=1; (*A)[20][0]=beta+h/2;
+	(*A)[21][11]=-1; (*A)[21][0]=-beta+h/2;
+	(*A)[22][12]=1; (*A)[22][0]=gamma+h/2;
+	(*A)[23][12]=-1; (*A)[23][0]=-gamma+h/2;
 }
 /*
 int main(){

@@ -148,7 +148,7 @@ int simplex(vector<vector<double>> _A){
 	simplex(&A,&base);
 
 	//show_matrix(&A,&base);
-	if(A[0][0]>EPS){
+	if(A[0][0]>EPS){//EPS){
 		return -1;
 	}
 	return 1;
