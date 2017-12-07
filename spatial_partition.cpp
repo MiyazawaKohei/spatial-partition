@@ -27,7 +27,7 @@ struct queue_of_vnode{
 };
 
 int main(){
-	int n_a=60;
+	int n_a=2;
 	int n_b=n_a;
 	vector<vector<double>> _A(n_a/2,vector<double>(13));
 	double SDofnoise=1;
@@ -41,26 +41,37 @@ int main(){
 	A=Init_Vectors_inA(B,rotation,permutation,n_a,SDofnoise);
 	A=Init_Vectors_inB(n_b);
 	make_initial_matrix(A,B,&_A);
+	show_matrix(&_A);
+	/*
+	const int _m=5;
+	const int _n=2;
+	double __A[_m][_n+1]=	{{0,1,0},
+						{-2.999999, 0, 1},
+						 {-1, -1 ,1},
+						 {0, 1 ,1},
+						{3,0,-1}};
+	vector<vector<double>> ___A(_m,vector<double>(_n+1));
+	for(int i=0; i<_m; i++){
+		for(int j=0; j<=_n; j++){
+			___A[i][j]= __A[i][j];
+		}
+	}
+	cout<<simplex(___A)<<endl;
+	*/
 	int _m=n_a/2;
 	int _n=12;
-	//show_matrix(&_A);
-	//return 0;
-	/*double _A[_m][_n]=	{{1,1,2,4,6,3,2,6,2,2,2,4},
-						 {2,0,-1,3,6,1,3,7,2,2,5,3},
-						 {2,5,2,7,2,4,7,2,4,7,9,1}};
-	double _B[_m]={4,5,7};
-	*/
 	
 	const double pi=3.14159265358979;
 	vector<vector<double>> template_of_A(24,vector<double>(13));
-	int devide=1000000000;
+	int devide=20;
 	double h=pi/devide;
-	double alpha,beta,gamma;
 	double No=0;
 
 	int count=0;
-	int countn[40];
-	for (int i=0; i<=39; i++) countn[i]=0;
+	int countn[101];
+	int outputposi,outputnega;
+	double center;
+	for (int i=0; i<=100; i++) countn[i]=0;
 	for(double alpha=0; alpha<2*pi-EPS ; alpha+=h){
 
 		for(double beta=0; beta<pi-EPS; beta+=h){
@@ -69,6 +80,9 @@ int main(){
 						cout<<count<<","<<alpha<<","<<beta<<","<<gamma<<endl;
 				//cout<<gamma<<endl;
 				make_matrix(alpha, beta, gamma ,h ,&template_of_A);
+				//show_matrix(&template_of_A);
+				//return 0;
+				//continue;
 				partition_tree *T;
 				T= new partition_tree;
 				T->head= new vnode;
@@ -83,72 +97,98 @@ int main(){
 					vnode *p=Q->head;
 					if(p->plane_label<=_m){
 						int m=p->plane_label;
-						cout<<m<<endl;
+						//cout<<m<<endl;
 						countn[m]++;
-						vector<vector<double>> A(m+1+24,vector<double>(_n+1));
+						
+						center=0;
+						for(int i=1; i<=9; i++){
+							center+=template_of_A[2*i-1][0]*_A[m-1][i];
+						}
+						//cout<<"center: "<<center<<endl;
+						int No_of_active_constrains=0;
+						for(int i=0; i<m-1; i++){
+							if (p->path[i]!=0) No_of_active_constrains++;
+						}
+						cout<<"No_of_active_constrains"<< No_of_active_constrains<<"plane_label"<<m<<endl;
+						vector<vector<double>> A(No_of_active_constrains+24+1,vector<double>(_n+1));
 						for(int i=1; i<=24; i++){
 							for(int j=0; j<template_of_A[0].size(); j++){
-								A[m+i][j]= template_of_A[i-1][j];
+								A[No_of_active_constrains+i][j]= template_of_A[i-1][j];
 							}
 						}
-						//vector<vector<double>> A(m+1,vector<double>(_n+1));
-						
+						int ii=0;
+						for(int i=1; i<=m-1; i++){
+							cout<<p->path[i-1]<<",";
+						}
+						cout<<endl;
 						for(int i=1; i<=m-1; i++){	
+							if (p->path[i-1]==0) continue;
+							ii++;
+
 							for(int j=1; j<=_n; j++){
-								A[i][j]=p->path[i-1]*_A[i-1][j-1];
+								A[ii][j]=p->path[i-1]*_A[i-1][j];
 							}
-							A[i][0]=0;//p->path[i-1]*_B[i-1];
+							A[ii][0]=0;//p->path[i-1]*_B[i-1];
 						}
 						for(int j=1; j<=_n; j++){
-							A[m][j]=_A[m-1][j-1];	
+							A[0][j]=-_A[m-1][j];	
 						}
-						A[m][0]=0.00001;//_B[m-1];
-						/*
-						cout<<"A:"<<endl;
-						for(int i=0; i<=m; i++){
-							for(int j=0; j<=_n; j++){
-								cout<<A[i][j];
-								cout<<",";
-							}
-							cout<<endl;
-						}*/
+						A[0][0]=0;
 						//show_matrix(&A);
-						if(simplex(A)==1){
+						outputposi=simplex(A);
+
+						if(outputposi==1){
 							p->positive=new vnode;
 							Q->tail->next=p->positive;
 							Q->tail=p->positive;
 							p->positive->plane_label=p->plane_label+1;
 							p->positive->path=p->path;
-							p->positive->path.push_back(1);
-						}else p->positive=NULL;
+							p->positive->path.push_back(-1);
+							cout<<"positive"<<endl;
+						}else { p->positive=NULL;}//p->positive=NULL; return 0;}
 						
 						for(int j=1; j<=_n; j++){
-							A[m][j]=-_A[m-1][j-1];	
+							A[0][j]=_A[m-1][j];	
 						}
 
-						A[m][0]=-0.00001;//-_B[m-1];
-						//show_matrix(&A);
-						if(simplex(A)==1){
+						A[0][0]=0;
+						outputnega=simplex(A);
+						if(outputnega==1){
 							p->negative=new vnode;
 							Q->tail->next=p->negative;
 							Q->tail=p->negative;
 							p->negative->plane_label=p->plane_label+1;
 							p->negative->path=p->path;
-							p->negative->path.push_back(-1);
-						}else p->negative=NULL;
+							p->negative->path.push_back(1);
+							cout<<"negative"<<endl;
+						}else {p->negative=NULL;}//   return 0;}
+						if(p->positive!=NULL && p->negative==NULL){
+							p->positive->path.pop_back();
+							p->positive->path.push_back(0);
+							cout<<"only positive"<<endl;
+						}
+						if(p->negative!=NULL && p->positive==NULL){
+							p->negative->path.pop_back();
+							p->negative->path.push_back(0);
+							cout<<"only negative"<<endl;
+						}
 					}else count++;
 					if(p==Q->tail) break;
 					Q->head=p->next;
 					delete p;
+					//for (int i=0; i<=50; i++) {cout<<i<<":"<<countn[i]<<",";}
+					//cout<<endl;
+					//return 0;
 				}
-					for (int i=0; i<=39; i++) {cout<<i<<","<<countn[i]<<endl;}
-				if(count>0 ){cout<<count<<endl; return 0;}
+				//return 0;
+					for (int i=0; i<=50; i++) {cout<<i<<":"<<countn[i]<<",";}
+					cout<<endl;
+				//if(count>0 ){cout<<count<<endl; return 0;}
+				return 0;
 			}
 		}
 		//show_matrix(&A);
 	}
 	cout<<"count"<<count<<endl;	
-
-	
-	return 0;
-}
+		
+} 
